@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - run: echo 'The triggering workflow passed ${{ github.event.workflow_run.id }}'
+      - run: echo 'The triggering workflow passed ${{ github.event.workflow_run.name }}'
 
       - name: Download artifact
         id: download-artifact

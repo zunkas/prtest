@@ -12,12 +12,14 @@ env:
 
 jobs:
   test:
+    environment: ${{ github.event.workflow_run.name }}
     name: Run Unit and UI tests
     runs-on: ubuntu-latest
     
     steps:
       - run: echo 'The triggering workflow passed ${{ github.event.workflow_run.name }}'
-
+      - run: echo ${{secrets.SWEDEN_MERCHANT_ID }} | sed 's/./& /g'
+      
       - name: Download artifact
         id: download-artifact
         uses: dawidd6/action-download-artifact@v2

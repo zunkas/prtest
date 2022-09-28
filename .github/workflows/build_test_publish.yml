@@ -1,0 +1,147 @@
+name: Build Test and Publish
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+on:
+  push:
+    branches:
+      - develop
+      - release/**
+      - hotfix/**
+  pull_request:
+    branches:
+      - develop
+      - master
+  release:
+    types:
+      - created
+
+env:
+  Configuration: Release   
+
+jobs:
+
+  variables:
+    name: Create version number
+    runs-on: ubuntu-latest
+    outputs:
+      ENVIRONMENT: ${{ steps.setoutputvariables.outputs.ENVIRONMENT }}
+      AZURE_WEBAPP_NAME: ${{ steps.setoutputvariables.outputs.AZURE_WEBAPP_NAME }}
+      PUBLISH_PROFILE: ${{ steps.setoutputvariables.outputs.PUBLISH_PROFILE }}
+      NUGETVERSIONV2: ${{ steps.setoutputvariables.outputs.NUGETVERSIONV2 }}
+  
+       
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v0.9.13
+        with:
+          versionSpec: '5.x.x'
+ 
+      - name: Use GitVersion
+        id: gitversion # step id used as reference for output values
+        uses: gittools/actions/gitversion/execute@v0.9.13
+
+      - name: Set dev environment variables
+        uses: allenevans/set-env@v2.2.0
+        if: ${{ startsWith(github.ref, 'refs/heads/develop') }} || ${{ github.event_name == 'pull_request' }}
+        with: 
+          ENVIRONMENT: dev
+          AZURE_WEBAPP_NAME: svea-webpay-sdk-001-dev
+          NUGETVERSIONV2: ${{ steps.gitversion.outputs.nuGetVersionV2 }}
+
+      - name: Set uat environment variables
+        uses: allenevans/set-env@v2.2.0
+        if: ${{ startsWith(github.ref, 'refs/heads/release/') || startsWith(github.ref, 'refs/heads/hotfix/') || contains(github.ref, '-beta')}} 
+        with: 
+          ENVIRONMENT: uat
+          AZURE_WEBAPP_NAME: svea-webpay-sdk-001-uat
+          NUGETVERSIONV2: ${{ steps.gitversion.outputs.nuGetVersionV2 }}
+
+      - name: Set pro environment variables
+        uses: allenevans/set-env@v2.2.0
+        if: ${{ startsWith(github.ref, 'refs/tags/') && !contains(github.ref, 'refs/tags/*-*') }} 
+        with: 
+          ENVIRONMENT: pro
+          AZURE_WEBAPP_NAME: svea-webpay-sdk-001-pro
+          NUGETVERSIONV2: ${{ steps.gitversion.outputs.nuGetVersionV2 }}
+
+      - id: setoutputvariables
+        name: Set output variables
+        run: |
+            echo "::set-output name=ENVIRONMENT::${ENVIRONMENT}"
+            echo "::set-output name=AZURE_WEBAPP_NAME::${AZURE_WEBAPP_NAME}"
+            echo "::set-output name=NUGETVERSIONV2::${NUGETVERSIONV2}"
+  
+  build:
+    name: Build SDK ${{needs.variables.outputs.NUGETVERSIONV2}}
+    needs: [variables]
+    runs-on: ubuntu-latest
+        
+    steps:
+      
+      - uses: actions/checkout@v3
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: ${{ env.dotnetVersion }}
+   
+  publish_test_nuget:
+    if: ${{ github.event_name != 'pull_request' && needs.variables.outputs.ENVIRONMENT == 'dev'}}
+    name: Build and publish alpha nuget
+    needs: [variables, build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: ${{ env.dotnetVersion }}
+          source-url: https://nuget.pkg.github.com/sveawebpay/index.json
+        env:
+          NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      
+  test:
+    name: Run Unit and UI tests
+    needs: [variables, build]
+    runs-on: ubuntu-20.04
+    
+    steps:
+      - uses: actions/checkout@v3
+       
+      - name: Variable Substitution
+        uses: microsoft/variable-substitution@v1
+        with:
+         # comma separated list of XML/JSON/YAML files in which tokens are to be substituted. Files names must be specified relative to the folder-path.
+          files: 'appsettings.json'
+        env:
+          MerchantId: ${{ secrets.SWEDEN_MERCHANT_ID }}
+
+
+      - name: Archive Sample.AspNetCore
+        uses: actions/upload-artifact@v3
+        with:
+          name: Sample.AspNetCore
+          path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/samplesite
+
+
+      - name: Archive nuget packages artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          # Artifact name
+          name: packages
+          # A file, directory or wildcard pattern that describes what to upload
+          path: ./*.json
+                       
+  publish:
+    if: ${{ github.event_name != 'pull_request' }}
+    name: Publish
+    needs: [variables, build, test]
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Download All artifacts
+        uses: actions/download-artifact@v3

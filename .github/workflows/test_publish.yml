@@ -19,15 +19,15 @@ jobs:
           
       - name: Display structure of downloaded files
         run: ls -R
-        working-directory: ~/Sample.AspNetCore
+        working-directory: Sample.AspNetCore
 
       - name: Display structure of downloaded files
         run: ls -R
-        working-directory: ~/Sample.AspNetCore.SystemTests
+        working-directory: Sample.AspNetCore.SystemTests
 
       - name: Display structure of downloaded files
         run: ls -R
-        working-directory: ~/packages
+        working-directory: packages
 
 
 

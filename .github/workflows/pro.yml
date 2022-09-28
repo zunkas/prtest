@@ -11,7 +11,7 @@ jobs:
     uses: ./.github/workflows/reusable_version.yml
   
   callBuild:
-    needs callVersion:
+    needs: [callVersion]
     uses: ./.github/workflows/reusable_build.yml
     with:
       NUGETVERSIONV2: ${{ jobs.callVersion.outputs.NUGETVERSIONV2 }} 

@@ -13,6 +13,7 @@
 
 
 
+
 ## 1. Introduction
 
 The CheckoutApi class methods are used to Create, Get and Update orders through Svea Checkout. (Link to official Svea documentation) [Svea Checkout API](https://checkoutapi.svea.com/docs)

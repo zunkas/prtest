@@ -10,28 +10,20 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/download-artifact@v3
+      - name: Download artifact
+        id: download-artifact
+        uses: dawidd6/action-download-artifact@v2
         with:
-          name: Sample.AspNetCore
-          path: ~/Sample.AspNetCore
-
+          workflow: build.yml
+          workflow_conclusion: success
+          
       - name: Display structure of downloaded files
         run: ls -R
         working-directory: ~/Sample.AspNetCore
 
-      - uses: actions/download-artifact@v3
-        with:
-          name: Sample.AspNetCore.SystemTests
-          path: ~/Sample.AspNetCore.SystemTests
-
       - name: Display structure of downloaded files
         run: ls -R
         working-directory: ~/Sample.AspNetCore.SystemTests
-
-      - uses: actions/download-artifact@v3
-        with:
-          name: packages
-          path: ~/packages
 
       - name: Display structure of downloaded files
         run: ls -R

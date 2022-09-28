@@ -1,0 +1,18 @@
+name: Uat
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+on:
+  push:
+    branches:
+      - release/**
+      - hotfix/**
+
+jobs:
+  call-version:
+    uses: ./.github/workflows/reusable_version.yml
+  
+  call-build:
+    needs call-version:
+    uses: ./github/workflows/reusable_build.yml
+    with:
+      NUGETVERSIONV2: ${{ jobs.call-version.outputs.NUGETVERSIONV2 }}

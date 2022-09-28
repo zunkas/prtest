@@ -69,7 +69,9 @@ jobs:
           
       - name: Start ngrok
         #if: ${{ github.event_name != 'pull_request' }}
-        run: ./ngrok start -config Sample.AspNetCore/ngrok.yml uitestdev &
+        run: |
+          ./ngrok config add-authtoken ${{ secrets.NGROK_AUTHTOKEN }}
+          ./ngrok start -config Sample.AspNetCore/ngrok.yml uitestdev &
                    
       - name: Start SDK Sample project
         #if: ${{ github.event_name != 'pull_request' }}

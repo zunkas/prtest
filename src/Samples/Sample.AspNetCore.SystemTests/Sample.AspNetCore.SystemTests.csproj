@@ -12,6 +12,10 @@
 
   <ItemGroup>
     <None Remove="appsettings.json" />
+    <Content Include="chrome-driver-udpate.ps1">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>

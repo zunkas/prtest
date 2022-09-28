@@ -8,3 +8,14 @@ on:
   pull_request:
     branches:
       - develop
+
+jobs:
+  callVersion:
+    uses: ./.github/workflows/reusable_version.yml
+  
+  callBuild:
+    needs call-version:
+    uses: ./github/workflows/reusable_build.yml
+    with:
+      NUGETVERSIONV2: ${{ jobs.callVersion.outputs.NUGETVERSIONV2 }} 
+  

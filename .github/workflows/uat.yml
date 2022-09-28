@@ -8,11 +8,11 @@ on:
       - hotfix/**
 
 jobs:
-  call-version:
+  callVersion:
     uses: ./.github/workflows/reusable_version.yml
   
-  call-build:
+  callBuild:
     needs call-version:
     uses: ./github/workflows/reusable_build.yml
     with:
-      NUGETVERSIONV2: ${{ jobs.call-version.outputs.NUGETVERSIONV2 }}
+      NUGETVERSIONV2: ${{ jobs.callVersion.outputs.NUGETVERSIONV2 }}

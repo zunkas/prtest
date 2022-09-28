@@ -1,0 +1,116 @@
+on:
+  workflow_run:
+    workflows: ["Build"]
+    types:
+      - completed
+
+jobs:
+  test:
+    name: Run Unit and UI tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: Sample.AspNetCore
+          path: ./Sample.AspNetCore
+
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: ./Sample.AspNetCore
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: Sample.AspNetCore.SystemTests
+          path: ./Sample.AspNetCore.SystemTests
+
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: ./Sample.AspNetCore.SystemTests
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: packages
+          path: ./packages
+
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: ./packages
+
+
+
+  #     - name: Variable Substitution
+  #       uses: microsoft/variable-substitution@v1
+  #       with:
+  #        # comma separated list of XML/JSON/YAML files in which tokens are to be substituted. Files names must be specified relative to the folder-path.
+  #          files: 'src/Samples/Sample.AspNetCore/appsettings.json, src/Samples/Sample.AspNetCore/ngrok.yml, src/Samples/Sample.AspNetCore.SystemTests/appsettings.json'
+  #       env:
+  #         Credentials.0.MerchantId: ${{ secrets.SWEDEN_MERCHANT_ID }}
+  #         Credentials.0.Secret: ${{ secrets.SWEDEN_MERCHANT_SECRET }}
+  #         Credentials.1.MerchantId: ${{ secrets.NORWAY_MERCHANT_ID }}
+  #         Credentials.1.Secret: ${{ secrets.NORWAY_MERCHANT_SECRET }}
+  #         Credentials.2.MerchantId: ${{ secrets.FINNISH_MERCHANT_ID }}
+  #         Credentials.2.Secret: ${{ secrets.FINNISH_MERCHANT_SECRET }}
+  #         MerchantSettings.PushUri: https://svea-webpay-sdk-001-${{ needs.variables.outputs.ENVIRONMENT }}.azurewebsites.net/api/svea/push/{checkout.order.uri}/?marketId={marketId}
+  #         MerchantSettings.TermsUri: https://svea-webpay-sdk-001-${{ needs.variables.outputs.ENVIRONMENT }}.azurewebsites.net/terms
+  #         MerchantSettings.CheckoutUri: https://svea-webpay-sdk-001-${{ needs.variables.outputs.ENVIRONMENT }}.azurewebsites.net/CheckOut/LoadPaymentMenu
+  #         MerchantSettings.ConfirmationUri: https://svea-webpay-sdk-001-${{ needs.variables.outputs.ENVIRONMENT }}.azurewebsites.net/checkout/thankyou
+  #         MerchantSettings.CheckoutValidationCallbackUri: https://svea-webpay-sdk-001-${{ needs.variables.outputs.ENVIRONMENT }}.azurewebsites.net/api/svea/validation/{checkout.order.uri}/?marketId={marketId}
+
+  #     - name: Setup .NET
+  #       uses: actions/setup-dotnet@v2
+  #       with:
+  #         dotnet-version: ${{ env.dotnetVersion }}       
+
+  #     - name: Install dependencies
+  #       run: dotnet restore ${{ env.SlnPath }}
+
+  #     - name: Run Unit Tests
+  #       run: dotnet test --configuration ${{ env.Configuration }} src/Svea.WebPay.SDK.Tests/Svea.WebPay.SDK.Tests.csproj
+  #       env:
+  #         Credentials:0:MerchantId: ${{ secrets.SWEDEN_MERCHANT_ID}}
+  #         Credentials:0:Secret: ${{ secrets.SWEDEN_MERCHANT_SECRET }}
+  #         Credentials:1:MerchantId: ${{ secrets.NORWAY_MERCHANT_ID}}
+  #         Credentials:1:Secret: ${{ secrets.NORWAY_MERCHANT_SECRET }}
+  #         Credentials:2:MerchantId: ${{ secrets.FINNISH_MERCHANT_ID }}
+  #         Credentials:2:Secret: ${{ secrets.FINNISH_MERCHANT_SECRET }}
+          
+  #     - name: Publish Sdk Sample site
+  #       run: dotnet publish --configuration ${{ env.Configuration }} -p:Version=${{ needs.variables.outputs.nuGetVersionV2 }} --no-restore src/Samples/Sample.AspNetCore/Sample.AspNetCore.csproj --output '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/samplesite'        
+
+  #     - name: Archive Sample.AspNetCore
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: Sample.AspNetCore
+  #         path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/samplesite
+
+  #     - name: Nuget pack
+  #       run: dotnet pack ${{ env.CsprojPath }} -p:PackageVersion=${{ needs.variables.outputs.NUGETVERSIONV2 }} -p:Version=${{ needs.variables.outputs.NUGETVERSIONV2 }} --configuration=${{ env.Configuration }} --output=artifacts
+
+  #     - name: Archive nuget packages artifacts
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         # Artifact name
+  #         name: packages
+  #         # A file, directory or wildcard pattern that describes what to upload
+  #         path: artifacts/*.nupkg
+
+  # publish_test_nuget:
+  #   if: ${{ github.event_name != 'pull_request' && needs.variables.outputs.ENVIRONMENT == 'dev'}}
+  #   name: Build and publish alpha nuget
+  #   needs: [variables, build, test]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3 
+      
+  #     - name: Setup .NET
+  #       uses: actions/setup-dotnet@v2
+              
+  #     - name: Install dependencies
+  #       run: dotnet restore ${{ env.SlnPath }}
+
+  #     - name: Build Solution
+  #       run: dotnet build ${{ env.SlnPath }} -p:Version=${{ needs.variables.outputs.NUGETVERSIONV2 }}  --configuration ${{ env.Configuration }} --no-restore
+      
+  #     - name: Nuget pack
+  #       run: dotnet pack ${{ env.CsprojPath }} -p:PackageVersion=${{ needs.variables.outputs.NUGETVERSIONV2 }} -p:Version=${{ needs.variables.outputs.NUGETVERSIONV2 }} --configuration=${{ env.Configuration }} --output=artifacts

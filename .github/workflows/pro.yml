@@ -20,3 +20,4 @@ jobs:
       SdkCsprojPath: ./src/Svea.WebPay.SDK/Svea.WebPay.SDK.csproj
       SampleSiteCsprojPath: ./src/Samples/Sample.AspNetCore/Sample.AspNetCore.csproj
       SystemTestsCsprojPath: ./src/Samples/Sample.AspNetCore.SystemTests/Sample.AspNetCore.SystemTests.csproj
+      UnitTestsCsprojPath: ./src/Svea.WebPay.SDK.Tests/Svea.WebPay.SDK.Tests.csproj

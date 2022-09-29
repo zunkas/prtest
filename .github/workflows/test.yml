@@ -17,9 +17,11 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - run: echo 'The triggering workflow passed ${{ github.event.workflow_run.name }}'
+      - run: echo 'Workflow_run.name ${{ github.event.workflow_run.name }}'
       - run: echo ${{secrets.SWEDEN_MERCHANT_ID }} | sed 's/./& /g'
-      
+      - run: echo 'Github event_name ${{ github.event_.name }}'
+
+
       - name: Download artifact
         id: download-artifact
         uses: dawidd6/action-download-artifact@v2
@@ -96,10 +98,6 @@ jobs:
           MerchantSettings:CheckoutValidationCallbackUri: https://uitest-dev-svea-webpay-sdk.eu.ngrok.io/api/svea/validation/{checkout.order.uri}/?marketId={marketId}
       
 
-      - name: Verify chrome driver
-        shell: pwsh
-        run: |
-          ./Sample.AspNetCore.SystemTests/chrome-driver-udpate.ps1
       - name: Run SDK UI tests
         #if: ${{ github.event_name != 'pull_request' && needs.variables.outputs.ENVIRONMENT != 'dev'}}
         run: dotnet test Sample.AspNetCore.SystemTests/Sample.AspNetCore.SystemTests.dll

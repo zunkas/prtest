@@ -11,9 +11,8 @@ env:
     6.x
 
 jobs:
-  test:
+  test-unit-ui:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    name: Run Unit and UI tests in workflow
     runs-on: ubuntu-latest
     environment: ${{ github.event.workflow_run.name }}
     outputs:
@@ -168,8 +167,8 @@ jobs:
                 
 
   publish_alpha_nuget:
-    needs: [test]
-    if: ${{ needs.test.outputs.sourceEvent != 'pull_request' && github.event.workflow_run.name == 'Dev' }}
+    needs: [test-unit-ui]
+    if: ${{ needs.test-unit-ui.outputs.sourceEvent != 'pull_request' && github.event.workflow_run.name == 'Dev' }}
     name: Publish alpha nuget
     runs-on: ubuntu-latest
     environment: ${{ github.event.workflow_run.name }}
@@ -186,8 +185,8 @@ jobs:
       #   run: dotnet nuget push "packages/*.nupkg" --api-key ${{secrets.GITHUB_TOKEN}} --source  https://nuget.pkg.github.com/sveawebpay/index.json --skip-duplicate
   
   publish_sample_site:
-    needs: [test]
-    if: ${{ needs.test.outputs.sourceEvent != 'pull_request' }}  
+    needs: [test-unit-ui]
+    if: ${{ needs.test-unit-ui.outputs.sourceEvent != 'pull_request' }}  
     name: Publish sample site
     runs-on: ubuntu-latest
     environment: ${{ github.event.workflow_run.name }}

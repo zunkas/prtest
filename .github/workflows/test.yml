@@ -57,8 +57,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           name: Test XYZ
           conclusion: ${{ job.status }}
-          output: |
-            {"summary":${{ steps.test.outputs.summary }}}
+
 
       # - uses: actions/github-script@v5
       #   id: update-check-run

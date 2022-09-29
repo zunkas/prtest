@@ -12,9 +12,9 @@ env:
 
 jobs:
   test:
-    environment: ${{ github.event.workflow_run.name }}
     name: Run Unit and UI tests
     runs-on: ubuntu-latest
+    environment: ${{ github.event.workflow_run.name }}
     outputs:
       sourceHeadRepo: ${{ steps.source-run-info.outputs.sourceHeadRepo }}
       sourceHeadBranch: ${{ steps.source-run-info.outputs.sourceHeadBranch }}
@@ -27,7 +27,6 @@ jobs:
       sourceEvent: ${{ steps.source-run-info.outputs.sourceEvent }}
 
     steps:
-
       - name: "Get information about the origin 'CI' run"
         uses: potiuk/get-workflow-origin@v1_1
         id: source-run-info
@@ -134,22 +133,42 @@ jobs:
       #     SampleWebsite:Url: https://localhost:5001
                 
 
-  # publish_test_nuget:
-  #   #if: ${{ github.event_name != 'pull_request' && needs.variables.outputs.ENVIRONMENT == 'dev'}}
-  #   name: Build and publish alpha nuget
-  #   needs: [test]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v3 
-      
-  #     - name: Setup .NET
-  #       uses: actions/setup-dotnet@v2
-              
-  #     - name: Install dependencies
-  #       run: dotnet restore ${{ env.SlnPath }}
+  publish_test_nuget:
+    if: ${{ steps.source-run-info.outputs.sourceEvent != 'pull_request' && github.event.workflow_run.name == 'Dev' }}
+    name: Publish alpha nuget
+    needs: [test]
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.workflow_run.name }}
 
-  #     - name: Build Solution
-  #       run: dotnet build ${{ env.SlnPath }} -p:Version=${{ needs.variables.outputs.NUGETVERSIONV2 }}  --configuration ${{ env.Configuration }} --no-restore
-      
-  #     - name: Nuget pack
-  #       run: dotnet pack ${{ env.CsprojPath }} -p:PackageVersion=${{ needs.variables.outputs.NUGETVERSIONV2 }} -p:Version=${{ needs.variables.outputs.NUGETVERSIONV2 }} --configuration=${{ env.Configuration }} --output=artifacts
+    steps:
+      # - name: Download artifact
+      #   id: download-artifact
+      #   uses: dawidd6/action-download-artifact@v2
+      #   with:
+      #     workflow: build.yml
+      #     workflow_conclusion: success
+    
+      # - name: Publish test package to GitHub Package Registry
+      #   run: dotnet nuget push "packages/*.nupkg" --api-key ${{secrets.GITHUB_TOKEN}} --source  https://nuget.pkg.github.com/sveawebpay/index.json --skip-duplicate
+  
+  publish_sample_site:
+    if: ${{ steps.source-run-info.outputs.sourceEvent != 'pull_request' }}  
+    name: Publish sample site
+    needs: [test]
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.workflow_run.name }}
+
+    steps:
+      # - name: Download artifact
+      #   id: download-artifact
+      #   uses: dawidd6/action-download-artifact@v2
+      #   with:
+      #     workflow: build.yml
+      #     workflow_conclusion: success
+    
+      # - name: 'Run Azure webapp deploy using publish profile credentials'
+      #   uses: azure/webapps-deploy@v2
+      #   with: 
+      #     app-name: ${{ secrets.AZURE_WEBAPP_NAME }} # Replace with your app name
+      #     publish-profile: ${{ secrets.AZURE_WEBAPP_DEV_PUBLISH_PROFILE }} # Define secret variable in repository settings as per action documentation
+      #     package: 'Sample.AspNetCore'

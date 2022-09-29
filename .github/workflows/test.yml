@@ -12,7 +12,7 @@ env:
 
 jobs:
   test:
-    name: Run Unit and UI tests
+    name: Run Unit and UI tests in workflow
     runs-on: ubuntu-latest
     environment: ${{ github.event.workflow_run.name }}
     outputs:
@@ -133,7 +133,7 @@ jobs:
       #     SampleWebsite:Url: https://localhost:5001
                 
 
-  publish_test_nuget:
+  publish_alpha_nuget:
     needs: [test]
     if: ${{ needs.test.outputs.sourceEvent != 'pull_request' && github.event.workflow_run.name == 'Dev' }}
     name: Publish alpha nuget

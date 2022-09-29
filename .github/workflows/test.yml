@@ -47,6 +47,7 @@ jobs:
          # comma separated list of XML/JSON/YAML files in which tokens are to be substituted. Files names must be specified relative to the folder-path.
            files: 'Sample.AspNetCore/appsettings.json, Sample.AspNetCore/ngrok.yml, Sample.AspNetCore.SystemTests/appsettings.json'
         env:
+          authtoken: ${{ secrets.NGROK_AUTHTOKEN }}
           Credentials.0.MerchantId: ${{ secrets.SWEDEN_MERCHANT_ID }}
           Credentials.0.Secret: ${{ secrets.SWEDEN_MERCHANT_SECRET }}
           Credentials.1.MerchantId: ${{ secrets.NORWAY_MERCHANT_ID }}

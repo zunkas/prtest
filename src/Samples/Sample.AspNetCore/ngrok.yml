@@ -1,15 +1,15 @@
 authtoken: 
 region: eu
 tunnels:
-  uitestdev:
+  uitestDev:
     proto: http
     addr: https://localhost:5001
     subdomain: uitest-dev-svea-webpay-sdk
-  uitestuat:
+  uitestUat:
     proto: http
     addr: https://localhost:5001
     subdomain: uitest-uat-svea-webpay-sdk
-  uitestpro:
+  uitestPro:
     proto: http
     addr: https://localhost:5001
     subdomain: uitest-pro-svea-webpay-sdk

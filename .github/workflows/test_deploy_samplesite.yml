@@ -1,6 +1,7 @@
+name: Run unit and ui tests, deploy smaplesite 
 on:
   workflow_run:
-    workflows: ["Dev", "Uat", "Pro"]
+    workflows: ["Dev", "Uat"]
     types:
       - completed
 
@@ -15,16 +16,6 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     environment: ${{ github.event.workflow_run.name }}
-    outputs:
-      sourceHeadRepo: ${{ steps.source-run-info.outputs.sourceHeadRepo }}
-      sourceHeadBranch: ${{ steps.source-run-info.outputs.sourceHeadBranch }}
-      sourceHeadSha: ${{ steps.source-run-info.outputs.sourceHeadSha }}
-      mergeCommitSha: ${{ steps.source-run-info.outputs.mergeCommitSha }}
-      targetCommitSha: ${{ steps.source-run-info.outputs.targetCommitSha }}
-      pullRequestNumber: ${{ steps.source-run-info.outputs.pullRequestNumber }}
-      pullRequestLabels: ${{ steps.source-run-info.outputs.pullRequestLabels }}
-      targetBranch: ${{ steps.source-run-info.outputs.targetBranch }}
-      sourceEvent: ${{ steps.source-run-info.outputs.sourceEvent }}
 
     steps:
       - name: "Get information about the origin 'CI' run"
@@ -76,20 +67,15 @@ jobs:
           Credentials:2:Secret: ${{ secrets.FINNISH_MERCHANT_SECRET }}
 
       - name: Setup ngrok
-        #if: ${{ github.event_name != 'pull_request' }}
         run: |
           wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip
           jar xvf ngrok-stable-linux-amd64.zip
           chmod +x ngrok
           
       - name: Start ngrok
-        #if: ${{ github.event_name != 'pull_request' }}
-        run: |
-          ./ngrok authtoken ${{ secrets.NGROK_AUTHTOKEN }}
-          ./ngrok start -config Sample.AspNetCore/ngrok.yml uitestdev &
+        run: ./ngrok start -config Sample.AspNetCore/ngrok.yml uitest${{ github.event.workflow_run.name }} &
                    
       - name: Start SDK Sample project
-        #if: ${{ github.event_name != 'pull_request' }}
         working-directory: Sample.AspNetCore
         run:
             dotnet Sample.AspNetCore.dll &
@@ -107,7 +93,6 @@ jobs:
           MerchantSettings:CheckoutValidationCallbackUri: https://uitest-${{ github.event.workflow_run.name }}-svea-webpay-sdk.eu.ngrok.io/api/svea/validation/{checkout.order.uri}/?marketId={marketId}
       
       - name: Run SDK UI tests
-        #if: ${{ github.event_name != 'pull_request' && needs.variables.outputs.ENVIRONMENT != 'dev'}}
         run: dotnet test Sample.AspNetCore.SystemTests/Sample.AspNetCore.SystemTests.dll
         env:
           Credentials:0:MerchantId: ${{ secrets.SWEDEN_MERCHANT_ID}}
@@ -120,15 +105,13 @@ jobs:
 
       - name: Commit Action Status
         if: ${{ always() }}
-        # if: ${{ steps.source-run-info.outputs.sourceEvent == 'pull_request' }}
         uses: LouisBrunner/checks-action@v1.1.1
         with:
           sha: ${{ steps.source-run-info.outputs.sourceHeadSha }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          name: Test XYZ
+          name: Run Unit and UI tests
           conclusion: ${{ job.status }}
-                
-
+              
   publish_alpha_nuget:
     needs: [test-unit-ui]
     if: ${{ needs.test-unit-ui.outputs.sourceEvent != 'pull_request' && github.event.workflow_run.name == 'Dev' }}
@@ -141,8 +124,8 @@ jobs:
         id: download-artifact
         uses: dawidd6/action-download-artifact@v2
         with:
-          workflow: build.yml
           workflow_conclusion: success
+          run_id: ${{ github.event.workflow_run.id }}
     
       # - name: Publish test package to GitHub Package Registry
       #   run: dotnet nuget push "packages/*.nupkg" --api-key ${{secrets.GITHUB_TOKEN}} --source  https://nuget.pkg.github.com/sveawebpay/index.json --skip-duplicate
@@ -159,8 +142,8 @@ jobs:
         id: download-artifact
         uses: dawidd6/action-download-artifact@v2
         with:
-          workflow: build.yml
           workflow_conclusion: success
+          run_id: ${{ github.event.workflow_run.id }}
     
       # - name: 'Run Azure webapp deploy using publish profile credentials'
       #   uses: azure/webapps-deploy@v2

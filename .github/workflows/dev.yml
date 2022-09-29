@@ -11,11 +11,11 @@ on:
 
 jobs:
   callVersion:
-    uses: ./.github/workflows/reusable_version.yml
+    uses: ./.github/workflows/templates/version.yml
   
   callBuild:
     needs: [callVersion]
-    uses: ./.github/workflows/reusable_build.yml
+    uses: ./.github/workflows/templates/build.yml
     secrets: inherit
     with:
       Configuration: Release
@@ -24,12 +24,4 @@ jobs:
       SdkCsprojPath: ./src/Svea.WebPay.SDK/Svea.WebPay.SDK.csproj
       SampleSiteCsprojPath: ./src/Samples/Sample.AspNetCore/Sample.AspNetCore.csproj
       SystemTestsCsprojPath: ./src/Samples/Sample.AspNetCore.SystemTests/Sample.AspNetCore.SystemTests.csproj
-      UnitTestsCsprojPath: ./src/Svea.WebPay.SDK.Tests/Svea.WebPay.SDK.Tests.csproj
-  
-  # callTestAndPublish:
-  #   needs: [callBuild]
-  #   uses: ./.github/workflows/reusable_version.yml
-  #   secrets: inherit
-  #   with:
-  #     Environment: Dev
-  #     NUGETVERSIONV2: ${{ needs.callVersion.outputs.NUGETVERSIONV2 }} 
+      UnitTestsCsprojPath: ./src/Svea.WebPay.SDK.Tests/Svea.WebPay.SDK.Tests.csproj 

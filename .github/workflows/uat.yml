@@ -9,11 +9,12 @@ on:
 
 jobs:
   callVersion:
-    uses: ./.github/workflows/reusable_version.yml
+    uses: ./.github/workflows/templates/version.yml
   
   callBuild:
     needs: [callVersion]
-    uses: ./.github/workflows/reusable_build.yml
+    uses: ./.github/workflows/templates/build.yml
+    secrets: inherit
     with:
       Configuration: Release
       NUGETVERSIONV2: ${{ needs.callVersion.outputs.NUGETVERSIONV2 }} 

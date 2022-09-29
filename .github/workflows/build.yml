@@ -1,130 +1,130 @@
-name: Build
+# name: Build
 
-# Controls when the action will run. Triggers the workflow on push or pull request
-on:
-  push:
-    branches:
-      - develop
-      - release/**
-      - hotfix/**
-  pull_request:
-    branches:
-      - develop  
-  release:
-    types:
-      - created
+# # Controls when the action will run. Triggers the workflow on push or pull request
+# on:
+#   push:
+#     branches:
+#       - develop
+#       - release/**
+#       - hotfix/**
+#   pull_request:
+#     branches:
+#       - develop  
+#   release:
+#     types:
+#       - created
 
-env:
-  Configuration: Release 
-  SlnPath: ./src/Svea.WebPay.SDK.sln
-  CsprojPath: ./src/Svea.WebPay.SDK/Svea.WebPay.SDK.csproj
-  dotnetVersion: |
-    3.1.101
-    5.x
-    6.x
-  AZURE_WEBAPP_PACKAGE_PATH: '.'
+# env:
+#   Configuration: Release 
+#   SlnPath: ./src/Svea.WebPay.SDK.sln
+#   CsprojPath: ./src/Svea.WebPay.SDK/Svea.WebPay.SDK.csproj
+#   dotnetVersion: |
+#     3.1.101
+#     5.x
+#     6.x
+#   AZURE_WEBAPP_PACKAGE_PATH: '.'
 
 
-jobs:
+# jobs:
 
-  variables:
-    name: Create version number
-    runs-on: ubuntu-latest
-    outputs:
-      ENVIRONMENT: ${{ steps.setoutputvariables.outputs.ENVIRONMENT }}
-      AZURE_WEBAPP_NAME: ${{ steps.setoutputvariables.outputs.AZURE_WEBAPP_NAME }}
-      NUGETVERSIONV2: ${{ steps.setoutputvariables.outputs.NUGETVERSIONV2 }}
+#   variables:
+#     name: Create version number
+#     runs-on: ubuntu-latest
+#     outputs:
+#       ENVIRONMENT: ${{ steps.setoutputvariables.outputs.ENVIRONMENT }}
+#       AZURE_WEBAPP_NAME: ${{ steps.setoutputvariables.outputs.AZURE_WEBAPP_NAME }}
+#       NUGETVERSIONV2: ${{ steps.setoutputvariables.outputs.NUGETVERSIONV2 }}
   
        
-    steps:
-      - uses: actions/checkout@v3        
+#     steps:
+#       - uses: actions/checkout@v3        
 
-      - name: Install GitVersion
-        uses: gittools/actions/gitversion/setup@v0.9.13
-        with:
-          versionSpec: '5.x.x'
+#       - name: Install GitVersion
+#         uses: gittools/actions/gitversion/setup@v0.9.13
+#         with:
+#           versionSpec: '5.x.x'
  
-      - name: Fetch all history for all tags and branches
-        run: git fetch --prune --unshallow
+#       - name: Fetch all history for all tags and branches
+#         run: git fetch --prune --unshallow
  
-      - name: Use GitVersion
-        id: gitversion # step id used as reference for output values
-        uses: gittools/actions/gitversion/execute@v0.9.13
+#       - name: Use GitVersion
+#         id: gitversion # step id used as reference for output values
+#         uses: gittools/actions/gitversion/execute@v0.9.13
 
-      - name: Set dev environment variables
-        uses: allenevans/set-env@v2.2.0
-        if: ${{ startsWith(github.ref, 'refs/heads/develop') }} || ${{ github.event_name == 'pull_request' }}
-        with: 
-          ENVIRONMENT: dev
-          AZURE_WEBAPP_NAME: svea-webpay-sdk-001-dev
+#       - name: Set dev environment variables
+#         uses: allenevans/set-env@v2.2.0
+#         if: ${{ startsWith(github.ref, 'refs/heads/develop') }} || ${{ github.event_name == 'pull_request' }}
+#         with: 
+#           ENVIRONMENT: dev
+#           AZURE_WEBAPP_NAME: svea-webpay-sdk-001-dev
 
-      - name: Set uat environment variables
-        uses: allenevans/set-env@v2.2.0
-        if: ${{ startsWith(github.ref, 'refs/heads/release/') || startsWith(github.ref, 'refs/heads/hotfix/') || contains(github.ref, '-beta')}} 
-        with: 
-          ENVIRONMENT: uat
-          AZURE_WEBAPP_NAME: svea-webpay-sdk-001-uat
+#       - name: Set uat environment variables
+#         uses: allenevans/set-env@v2.2.0
+#         if: ${{ startsWith(github.ref, 'refs/heads/release/') || startsWith(github.ref, 'refs/heads/hotfix/') || contains(github.ref, '-beta')}} 
+#         with: 
+#           ENVIRONMENT: uat
+#           AZURE_WEBAPP_NAME: svea-webpay-sdk-001-uat
 
-      - name: Set pro environment variables
-        uses: allenevans/set-env@v2.2.0
-        if: ${{ startsWith(github.ref, 'refs/tags/') && !contains(github.ref, 'refs/tags/*-*') }} 
-        with: 
-          ENVIRONMENT: pro
-          AZURE_WEBAPP_NAME: svea-webpay-sdk-001-pro
+#       - name: Set pro environment variables
+#         uses: allenevans/set-env@v2.2.0
+#         if: ${{ startsWith(github.ref, 'refs/tags/') && !contains(github.ref, 'refs/tags/*-*') }} 
+#         with: 
+#           ENVIRONMENT: pro
+#           AZURE_WEBAPP_NAME: svea-webpay-sdk-001-pro
 
-      - name: Set generic environment variables
-        uses: allenevans/set-env@v2.2.0
-        with:           
-          NUGETVERSIONV2: ${{ steps.gitversion.outputs.nuGetVersionV2 }}
+#       - name: Set generic environment variables
+#         uses: allenevans/set-env@v2.2.0
+#         with:           
+#           NUGETVERSIONV2: ${{ steps.gitversion.outputs.nuGetVersionV2 }}
       
-      - id: setoutputvariables
-        name: Set output variables
-        run: |
-            echo "::set-output name=ENVIRONMENT::${ENVIRONMENT}"
-            echo "::set-output name=AZURE_WEBAPP_NAME::${AZURE_WEBAPP_NAME}"
-            echo "::set-output name=NUGETVERSIONV2::${NUGETVERSIONV2}"
+#       - id: setoutputvariables
+#         name: Set output variables
+#         run: |
+#             echo "::set-output name=ENVIRONMENT::${ENVIRONMENT}"
+#             echo "::set-output name=AZURE_WEBAPP_NAME::${AZURE_WEBAPP_NAME}"
+#             echo "::set-output name=NUGETVERSIONV2::${NUGETVERSIONV2}"
   
-  build:
-    name: Build SDK ${{needs.variables.outputs.NUGETVERSIONV2}}
-    needs: [variables]
-    runs-on: ubuntu-latest
+#   build:
+#     name: Build SDK ${{needs.variables.outputs.NUGETVERSIONV2}}
+#     needs: [variables]
+#     runs-on: ubuntu-latest
     
-    steps:
-      - uses: actions/checkout@v3
+#     steps:
+#       - uses: actions/checkout@v3
       
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v2
-        with:
-          dotnet-version: ${{ env.dotnetVersion }}
+#       - name: Setup .NET
+#         uses: actions/setup-dotnet@v2
+#         with:
+#           dotnet-version: ${{ env.dotnetVersion }}
  
-      - name: Install dependencies
-        run: dotnet restore ${{ env.SlnPath }}
+#       - name: Install dependencies
+#         run: dotnet restore ${{ env.SlnPath }}
  
-      - name: Publish Sdk Sample site
-        run: dotnet publish --configuration ${{ env.Configuration }} -p:Version=${{ needs.variables.outputs.nuGetVersionV2 }} --no-restore src/Samples/Sample.AspNetCore/Sample.AspNetCore.csproj --output '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/samplesite'
+#       - name: Publish Sdk Sample site
+#         run: dotnet publish --configuration ${{ env.Configuration }} -p:Version=${{ needs.variables.outputs.nuGetVersionV2 }} --no-restore src/Samples/Sample.AspNetCore/Sample.AspNetCore.csproj --output '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/samplesite'
 
-      - name: Archive Sample.AspNetCore
-        uses: actions/upload-artifact@v3
-        with:
-          name: Sample.AspNetCore
-          path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/samplesite
+#       - name: Archive Sample.AspNetCore
+#         uses: actions/upload-artifact@v3
+#         with:
+#           name: Sample.AspNetCore
+#           path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/samplesite
 
-      - name: Publish Sdk Sample site system test
-        run: dotnet publish --configuration ${{ env.Configuration }} -p:Version=${{ needs.variables.outputs.nuGetVersionV2 }} --no-restore src/Samples/Sample.AspNetCore.SystemTests/Sample.AspNetCore.SystemTests.csproj --output '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/systemtests'
+#       - name: Publish Sdk Sample site system test
+#         run: dotnet publish --configuration ${{ env.Configuration }} -p:Version=${{ needs.variables.outputs.nuGetVersionV2 }} --no-restore src/Samples/Sample.AspNetCore.SystemTests/Sample.AspNetCore.SystemTests.csproj --output '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/systemtests'
 
-      - name: Archive Sample.AspNetCore
-        uses: actions/upload-artifact@v3
-        with:
-          name: Sample.AspNetCore.SystemTests
-          path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/systemtests
+#       - name: Archive Sample.AspNetCore.SystemTests
+#         uses: actions/upload-artifact@v3
+#         with:
+#           name: Sample.AspNetCore.SystemTests
+#           path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/systemtests
 
-      - name: Nuget pack
-        run: dotnet pack ${{ env.CsprojPath }} -p:PackageVersion=${{ needs.variables.outputs.NUGETVERSIONV2 }} -p:Version=${{ needs.variables.outputs.NUGETVERSIONV2 }} --configuration=${{ env.Configuration }} --output=artifacts
+#       - name: Nuget pack
+#         run: dotnet pack ${{ env.CsprojPath }} -p:PackageVersion=${{ needs.variables.outputs.NUGETVERSIONV2 }} -p:Version=${{ needs.variables.outputs.NUGETVERSIONV2 }} --configuration=${{ env.Configuration }} --output=artifacts
 
-      - name: Archive nuget packages artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          # Artifact name
-          name: packages
-          # A file, directory or wildcard pattern that describes what to upload
-          path: artifacts/*.nupkg
+#       - name: Archive nuget packages artifacts
+#         uses: actions/upload-artifact@v3
+#         with:
+#           # Artifact name
+#           name: packages
+#           # A file, directory or wildcard pattern that describes what to upload
+#           path: artifacts/*.nupkg

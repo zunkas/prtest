@@ -11,9 +11,8 @@ env:
     6.x
 
 jobs:
-  test:
+  test-unit-ui:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    name: Run Unit and UI tests in workflow
     runs-on: ubuntu-latest
     environment: ${{ github.event.workflow_run.name }}
     outputs:

@@ -8,11 +8,11 @@ on:
 
 jobs:
   callVersion:
-    uses: ./.github/workflows/templates/version.yml
+    uses: ./.github/workflows/template_version.yml
   
   callBuild:
     needs: [callVersion]
-    uses: ./.github/workflows/templates/build.yml
+    uses: ./.github/workflows/template_build.yml
     secrets: inherit
     with:
       Configuration: Release

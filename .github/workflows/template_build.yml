@@ -1,4 +1,4 @@
-name: Reusable build
+name: Build
 
 on:
   workflow_call:

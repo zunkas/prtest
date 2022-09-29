@@ -15,49 +15,93 @@ jobs:
     environment: ${{ github.event.workflow_run.name }}
     name: Run Unit and UI tests
     runs-on: ubuntu-latest
-    
+    outputs:
+      sourceHeadRepo: ${{ steps.source-run-info.outputs.sourceHeadRepo }}
+      sourceHeadBranch: ${{ steps.source-run-info.outputs.sourceHeadBranch }}
+      sourceHeadSha: ${{ steps.source-run-info.outputs.sourceHeadSha }}
+      mergeCommitSha: ${{ steps.source-run-info.outputs.mergeCommitSha }}
+      targetCommitSha: ${{ steps.source-run-info.outputs.targetCommitSha }}
+      pullRequestNumber: ${{ steps.source-run-info.outputs.pullRequestNumber }}
+      pullRequestLabels: ${{ steps.source-run-info.outputs.pullRequestLabels }}
+      targetBranch: ${{ steps.source-run-info.outputs.targetBranch }}
+      sourceEvent: ${{ steps.source-run-info.outputs.sourceEvent }}
+
     steps:
-      - run: echo 'Workflow_run.name ${{ github.event.workflow_run.name }}'
+
+      - name: "Get information about the origin 'CI' run"
+        uses: potiuk/get-workflow-origin@v1_1
+        id: source-run-info
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          sourceRunId: ${{ github.event.workflow_run.id }}
+
+      - run: echo 'Workflow_run.name ${{ github.event.workflow_run.name }}'  
       - run: echo ${{secrets.SWEDEN_MERCHANT_ID }} | sed 's/./& /g'
       - run: echo 'Github event_name ${{ github.event_name }}'
 
 
-      - name: Download artifact
-        id: download-artifact
-        uses: dawidd6/action-download-artifact@v2
-        with:
-          workflow: build.yml
-          workflow_conclusion: success
+      # - name: Download artifact
+      #   id: download-artifact
+      #   uses: dawidd6/action-download-artifact@v2
+      #   with:
+      #     workflow: build.yml
+      #     workflow_conclusion: success
           
 
-      # - name: Variable Substitution
-      #   uses: microsoft/variable-substitution@v1
+      # # - name: Variable Substitution
+      # #   uses: microsoft/variable-substitution@v1
+      # #   with:
+      # #    # comma separated list of XML/JSON/YAML files in which tokens are to be substituted. Files names must be specified relative to the folder-path.
+      # #      files: 'Sample.AspNetCore/appsettings.json, Sample.AspNetCore/ngrok.yml, Sample.AspNetCore.SystemTests/appsettings.json'
+      # #   env:
+      # #     Credentials.0.MerchantId: ${{ secrets.SWEDEN_MERCHANT_ID }}
+      # #     Credentials.0.Secret: ${{ secrets.SWEDEN_MERCHANT_SECRET }}
+      # #     Credentials.1.MerchantId: ${{ secrets.NORWAY_MERCHANT_ID }}
+      # #     Credentials.1.Secret: ${{ secrets.NORWAY_MERCHANT_SECRET }}
+      # #     Credentials.2.MerchantId: ${{ secrets.FINNISH_MERCHANT_ID }}
+      # #     Credentials.2.Secret: ${{ secrets.FINNISH_MERCHANT_SECRET }}
+      # #     MerchantSettings.PushUri: https://svea-webpay-sdk-001-${{ needs.variables.outputs.ENVIRONMENT }}.azurewebsites.net/api/svea/push/{checkout.order.uri}/?marketId={marketId}
+      # #     MerchantSettings.TermsUri: https://svea-webpay-sdk-001-${{ needs.variables.outputs.ENVIRONMENT }}.azurewebsites.net/terms
+      # #     MerchantSettings.CheckoutUri: https://svea-webpay-sdk-001-${{ needs.variables.outputs.ENVIRONMENT }}.azurewebsites.net/CheckOut/LoadPaymentMenu
+      # #     MerchantSettings.ConfirmationUri: https://svea-webpay-sdk-001-${{ needs.variables.outputs.ENVIRONMENT }}.azurewebsites.net/checkout/thankyou
+      # #     MerchantSettings.CheckoutValidationCallbackUri: https://svea-webpay-sdk-001-${{ needs.variables.outputs.ENVIRONMENT }}.azurewebsites.net/api/svea/validation/{checkout.order.uri}/?marketId={marketId}
+
+      # - name: Setup .NET
+      #   uses: actions/setup-dotnet@v2
       #   with:
-      #    # comma separated list of XML/JSON/YAML files in which tokens are to be substituted. Files names must be specified relative to the folder-path.
-      #      files: 'Sample.AspNetCore/appsettings.json, Sample.AspNetCore/ngrok.yml, Sample.AspNetCore.SystemTests/appsettings.json'
-      #   env:
-      #     Credentials.0.MerchantId: ${{ secrets.SWEDEN_MERCHANT_ID }}
-      #     Credentials.0.Secret: ${{ secrets.SWEDEN_MERCHANT_SECRET }}
-      #     Credentials.1.MerchantId: ${{ secrets.NORWAY_MERCHANT_ID }}
-      #     Credentials.1.Secret: ${{ secrets.NORWAY_MERCHANT_SECRET }}
-      #     Credentials.2.MerchantId: ${{ secrets.FINNISH_MERCHANT_ID }}
-      #     Credentials.2.Secret: ${{ secrets.FINNISH_MERCHANT_SECRET }}
-      #     MerchantSettings.PushUri: https://svea-webpay-sdk-001-${{ needs.variables.outputs.ENVIRONMENT }}.azurewebsites.net/api/svea/push/{checkout.order.uri}/?marketId={marketId}
-      #     MerchantSettings.TermsUri: https://svea-webpay-sdk-001-${{ needs.variables.outputs.ENVIRONMENT }}.azurewebsites.net/terms
-      #     MerchantSettings.CheckoutUri: https://svea-webpay-sdk-001-${{ needs.variables.outputs.ENVIRONMENT }}.azurewebsites.net/CheckOut/LoadPaymentMenu
-      #     MerchantSettings.ConfirmationUri: https://svea-webpay-sdk-001-${{ needs.variables.outputs.ENVIRONMENT }}.azurewebsites.net/checkout/thankyou
-      #     MerchantSettings.CheckoutValidationCallbackUri: https://svea-webpay-sdk-001-${{ needs.variables.outputs.ENVIRONMENT }}.azurewebsites.net/api/svea/validation/{checkout.order.uri}/?marketId={marketId}
+      #     dotnet-version: ${{ env.dotnetVersion }}       
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v2
-        with:
-          dotnet-version: ${{ env.dotnetVersion }}       
+      # # - name: Install dependencies
+      # #   run: dotnet restore ${{ env.SlnPath }}
 
-      # - name: Install dependencies
-      #   run: dotnet restore ${{ env.SlnPath }}
+      # # - name: Run Unit Tests
+      # #   run: dotnet test src/Svea.WebPay.SDK.Tests/Svea.WebPay.SDK.Tests.csproj
+      # #   env:
+      # #     Credentials:0:MerchantId: ${{ secrets.SWEDEN_MERCHANT_ID}}
+      # #     Credentials:0:Secret: ${{ secrets.SWEDEN_MERCHANT_SECRET }}
+      # #     Credentials:1:MerchantId: ${{ secrets.NORWAY_MERCHANT_ID}}
+      # #     Credentials:1:Secret: ${{ secrets.NORWAY_MERCHANT_SECRET }}
+      # #     Credentials:2:MerchantId: ${{ secrets.FINNISH_MERCHANT_ID }}
+      # #     Credentials:2:Secret: ${{ secrets.FINNISH_MERCHANT_SECRET }}
 
-      # - name: Run Unit Tests
-      #   run: dotnet test src/Svea.WebPay.SDK.Tests/Svea.WebPay.SDK.Tests.csproj
+      # - name: Setup ngrok
+      #   #if: ${{ github.event_name != 'pull_request' }}
+      #   run: |
+      #     wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip
+      #     jar xvf ngrok-stable-linux-amd64.zip
+      #     chmod +x ngrok
+          
+      # - name: Start ngrok
+      #   #if: ${{ github.event_name != 'pull_request' }}
+      #   run: |
+      #     ./ngrok authtoken ${{ secrets.NGROK_AUTHTOKEN }}
+      #     ./ngrok start -config Sample.AspNetCore/ngrok.yml uitestdev &
+                   
+      # - name: Start SDK Sample project
+      #   #if: ${{ github.event_name != 'pull_request' }}
+      #   working-directory: Sample.AspNetCore
+      #   run:
+      #       dotnet Sample.AspNetCore.dll &
       #   env:
       #     Credentials:0:MerchantId: ${{ secrets.SWEDEN_MERCHANT_ID}}
       #     Credentials:0:Secret: ${{ secrets.SWEDEN_MERCHANT_SECRET }}
@@ -65,50 +109,24 @@ jobs:
       #     Credentials:1:Secret: ${{ secrets.NORWAY_MERCHANT_SECRET }}
       #     Credentials:2:MerchantId: ${{ secrets.FINNISH_MERCHANT_ID }}
       #     Credentials:2:Secret: ${{ secrets.FINNISH_MERCHANT_SECRET }}
-
-      - name: Setup ngrok
-        #if: ${{ github.event_name != 'pull_request' }}
-        run: |
-          wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip
-          jar xvf ngrok-stable-linux-amd64.zip
-          chmod +x ngrok
-          
-      - name: Start ngrok
-        #if: ${{ github.event_name != 'pull_request' }}
-        run: |
-          ./ngrok authtoken ${{ secrets.NGROK_AUTHTOKEN }}
-          ./ngrok start -config Sample.AspNetCore/ngrok.yml uitestdev &
-                   
-      - name: Start SDK Sample project
-        #if: ${{ github.event_name != 'pull_request' }}
-        working-directory: Sample.AspNetCore
-        run:
-            dotnet Sample.AspNetCore.dll &
-        env:
-          Credentials:0:MerchantId: ${{ secrets.SWEDEN_MERCHANT_ID}}
-          Credentials:0:Secret: ${{ secrets.SWEDEN_MERCHANT_SECRET }}
-          Credentials:1:MerchantId: ${{ secrets.NORWAY_MERCHANT_ID}}
-          Credentials:1:Secret: ${{ secrets.NORWAY_MERCHANT_SECRET }}
-          Credentials:2:MerchantId: ${{ secrets.FINNISH_MERCHANT_ID }}
-          Credentials:2:Secret: ${{ secrets.FINNISH_MERCHANT_SECRET }}
-          MerchantSettings:PushUri: https://uitest-dev-svea-webpay-sdk.eu.ngrok.io/api/svea/push/{checkout.order.uri}/?marketId={marketId}
-          MerchantSettings:TermsUri: https://uitest-dev-svea-webpay-sdk.eu.ngrok.io/terms
-          MerchantSettings:CheckoutUri: https://uitest-dev-svea-webpay-sdk.eu.ngrok.io/CheckOut/LoadPaymentMenu
-          MerchantSettings:ConfirmationUri: https://uitest-dev-svea-webpay-sdk.eu.ngrok.io/checkout/thankyou
-          MerchantSettings:CheckoutValidationCallbackUri: https://uitest-dev-svea-webpay-sdk.eu.ngrok.io/api/svea/validation/{checkout.order.uri}/?marketId={marketId}
+      #     MerchantSettings:PushUri: https://uitest-dev-svea-webpay-sdk.eu.ngrok.io/api/svea/push/{checkout.order.uri}/?marketId={marketId}
+      #     MerchantSettings:TermsUri: https://uitest-dev-svea-webpay-sdk.eu.ngrok.io/terms
+      #     MerchantSettings:CheckoutUri: https://uitest-dev-svea-webpay-sdk.eu.ngrok.io/CheckOut/LoadPaymentMenu
+      #     MerchantSettings:ConfirmationUri: https://uitest-dev-svea-webpay-sdk.eu.ngrok.io/checkout/thankyou
+      #     MerchantSettings:CheckoutValidationCallbackUri: https://uitest-dev-svea-webpay-sdk.eu.ngrok.io/api/svea/validation/{checkout.order.uri}/?marketId={marketId}
       
 
-      - name: Run SDK UI tests
-        #if: ${{ github.event_name != 'pull_request' && needs.variables.outputs.ENVIRONMENT != 'dev'}}
-        run: dotnet test Sample.AspNetCore.SystemTests/Sample.AspNetCore.SystemTests.dll
-        env:
-          Credentials:0:MerchantId: ${{ secrets.SWEDEN_MERCHANT_ID}}
-          Credentials:0:Secret: ${{ secrets.SWEDEN_MERCHANT_SECRET }}
-          Credentials:1:MerchantId: ${{ secrets.NORWAY_MERCHANT_ID}}
-          Credentials:1:Secret: ${{ secrets.NORWAY_MERCHANT_SECRET }}
-          Credentials:2:MerchantId: ${{ secrets.FINNISH_MERCHANT_ID }}
-          Credentials:2:Secret: ${{ secrets.FINNISH_MERCHANT_SECRET }}
-          SampleWebsite:Url: https://localhost:5001
+      # - name: Run SDK UI tests
+      #   #if: ${{ github.event_name != 'pull_request' && needs.variables.outputs.ENVIRONMENT != 'dev'}}
+      #   run: dotnet test Sample.AspNetCore.SystemTests/Sample.AspNetCore.SystemTests.dll
+      #   env:
+      #     Credentials:0:MerchantId: ${{ secrets.SWEDEN_MERCHANT_ID}}
+      #     Credentials:0:Secret: ${{ secrets.SWEDEN_MERCHANT_SECRET }}
+      #     Credentials:1:MerchantId: ${{ secrets.NORWAY_MERCHANT_ID}}
+      #     Credentials:1:Secret: ${{ secrets.NORWAY_MERCHANT_SECRET }}
+      #     Credentials:2:MerchantId: ${{ secrets.FINNISH_MERCHANT_ID }}
+      #     Credentials:2:Secret: ${{ secrets.FINNISH_MERCHANT_SECRET }}
+      #     SampleWebsite:Url: https://localhost:5001
                 
 
   # publish_test_nuget:

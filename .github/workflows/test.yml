@@ -12,6 +12,7 @@ env:
 
 jobs:
   test:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     name: Run Unit and UI tests in workflow
     runs-on: ubuntu-latest
     environment: ${{ github.event.workflow_run.name }}
@@ -27,6 +28,11 @@ jobs:
       sourceEvent: ${{ steps.source-run-info.outputs.sourceEvent }}
 
     steps:
+      - env:
+          EVENT_CONTEXT: ${{ toJSON(github.event) }}
+        run: |
+          echo $EVENT_CONTEXT
+
       - name: "Get information about the origin 'CI' run"
         uses: potiuk/get-workflow-origin@v1_1
         id: source-run-info
@@ -44,6 +50,34 @@ jobs:
         if: ${{ steps.source-run-info.outputs.sourceEvent == 'pull_request' }}  
         run: echo 'PULL REQUEST!!!'
       
+      - uses: actions/github-script@v5
+        id: update-check-run
+        if: ${{ steps.source-run-info.outputs.sourceEvent == 'pull_request' }}  
+        env:
+          number: ${{ steps.source-run-info.outputs.pullRequestNumber }}
+          job: ${{ github.job }}
+          # Conveniently, job.status maps to https://developer.github.com/v3/checks/runs/#update-a-check-run
+          conclusion: ${{ job.status }} 
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: pull } = await github.rest.pulls.get({
+              ...context.repo,
+              pull_number: process.env.number
+            });
+            const ref = pull.head.sha;
+            const { data: checks } = await github.rest.checks.listForRef({
+              ...context.repo,
+              ref
+            });
+            const check = checks.check_runs.filter(c => c.name === process.env.job);
+            const { data: result } = await github.rest.checks.update({
+              ...context.repo,
+              check_run_id: check[0].id,
+              status: 'completed',
+              conclusion: process.env.conclusion
+            });
+            return result;
       # - name: Download artifact
       #   id: download-artifact
       #   uses: dawidd6/action-download-artifact@v2

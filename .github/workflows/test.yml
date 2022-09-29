@@ -134,7 +134,7 @@ jobs:
                 
 
   publish_test_nuget:
-    if: ${{ steps.source-run-info.outputs.sourceEvent != 'pull_request' && github.event.workflow_run.name == 'Dev' }}
+    if: ${{ jobs.test.outputs.sourceEvent != 'pull_request' && github.event.workflow_run.name == 'Dev' }}
     name: Publish alpha nuget
     needs: [test]
     runs-on: ubuntu-latest
@@ -152,7 +152,7 @@ jobs:
       #   run: dotnet nuget push "packages/*.nupkg" --api-key ${{secrets.GITHUB_TOKEN}} --source  https://nuget.pkg.github.com/sveawebpay/index.json --skip-duplicate
   
   publish_sample_site:
-    if: ${{ steps.source-run-info.outputs.sourceEvent != 'pull_request' }}  
+    if: ${{ jobs.test.outputs.sourceEvent != 'pull_request' }}  
     name: Publish sample site
     needs: [test]
     runs-on: ubuntu-latest

@@ -29,7 +29,7 @@ namespace Svea.WebPay.SDK.Tests
         {
             string appRoot = "";
             if(AppContext.BaseDirectory.IndexOf("bin", StringComparison.Ordinal) == -1){
-                appRoot = "";
+                appRoot = AppContext.BaseDirectory;
             }
             else{
                 appRoot = AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf("bin", StringComparison.Ordinal));

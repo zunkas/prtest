@@ -1,3 +1,5 @@
+name: Deploy PRO nuget package and samplesite 
+
 on:
   workflow_run:
     workflows: ["Pro"]

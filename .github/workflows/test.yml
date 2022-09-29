@@ -39,6 +39,7 @@ jobs:
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow_conclusion: success
+          run_id: ${{ github.event.workflow_run.id }}
           
       - name: Variable Substitution
         uses: microsoft/variable-substitution@v1

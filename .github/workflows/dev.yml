@@ -16,6 +16,7 @@ jobs:
   callBuild:
     needs: [callVersion]
     uses: ./.github/workflows/reusable_build.yml
+    secrets: inherit
     with:
       Configuration: Release
       NUGETVERSIONV2: ${{ needs.callVersion.outputs.NUGETVERSIONV2 }} 

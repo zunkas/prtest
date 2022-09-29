@@ -52,7 +52,7 @@ jobs:
       
       - uses: actions/github-script@v5
         id: update-check-run
-        if: ${{ always() }}
+        if: ${{ steps.source-run-info.outputs.sourceEvent == 'pull_request' }}  
         env:
           number: ${{ steps.source-run-info.outputs.pullRequestNumber }}
           job: ${{ github.job }}

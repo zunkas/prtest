@@ -3,14 +3,27 @@ name: Reusable build
 on:
   workflow_call:
     inputs:
+      Configuration:
+        required: true
+        type: string
       NUGETVERSIONV2:
         required: true
         type: string
+      SlnPath:
+        required: true
+        type: string
+      SdkCsprojPath:
+        required: true
+        type: string
+      SampleSiteCsprojPath:
+        required: true
+        type: string
+      SystemTestsCsprojPath:
+        required: true
+        type: string
+
 
 env:
-  Configuration: Release 
-  SlnPath: ./src/Svea.WebPay.SDK.sln
-  CsprojPath: ./src/Svea.WebPay.SDK/Svea.WebPay.SDK.csproj
   dotnetVersion: |
     3.1.101
     5.x
@@ -31,10 +44,10 @@ jobs:
           dotnet-version: ${{ env.dotnetVersion }}
  
       - name: Install dependencies
-        run: dotnet restore ${{ env.SlnPath }}
+        run: dotnet restore ${{ inputs.SlnPath }}
  
       - name: Publish Sdk Sample site
-        run: dotnet publish --configuration ${{ env.Configuration }} -p:Version=${{ inputs.nuGetVersionV2 }} --no-restore src/Samples/Sample.AspNetCore/Sample.AspNetCore.csproj --output '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/samplesite'
+        run: dotnet publish --configuration ${{ inputs.Configuration }} -p:Version=${{ inputs.nuGetVersionV2 }} --no-restore ${{ inputs.SampleSiteCsprojPath }} --output '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/samplesite'
 
       - name: Archive Sample.AspNetCore
         uses: actions/upload-artifact@v3
@@ -48,7 +61,7 @@ jobs:
           ./src/Samples/Sample.AspNetCore.SystemTests/chrome-driver-udpate.ps1
 
       - name: Publish Sdk Sample site system test
-        run: dotnet publish --configuration ${{ env.Configuration }} -p:Version=${{ inputs.nuGetVersionV2 }} --no-restore src/Samples/Sample.AspNetCore.SystemTests/Sample.AspNetCore.SystemTests.csproj --output '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/systemtests'
+        run: dotnet publish --configuration ${{ inputs.Configuration }} -p:Version=${{ inputs.nuGetVersionV2 }} --no-restore ${{ inputs.SystemTestsCsprojPath }} --output '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/systemtests'
 
       - name: Archive Sample.AspNetCore.SystemTests
         uses: actions/upload-artifact@v3
@@ -57,7 +70,7 @@ jobs:
           path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/systemtests
 
       - name: Nuget pack
-        run: dotnet pack ${{ env.CsprojPath }} -p:PackageVersion=${{ inputs.NUGETVERSIONV2 }} -p:Version=${{ inputs.NUGETVERSIONV2 }} --configuration=${{ env.Configuration }} --output=artifacts
+        run: dotnet pack ${{ inputs.SdkCsprojPath }} -p:PackageVersion=${{ inputs.NUGETVERSIONV2 }} -p:Version=${{ inputs.NUGETVERSIONV2 }} --configuration=${{ inputs.Configuration }} --output=artifacts
 
       - name: Archive nuget packages artifacts
         uses: actions/upload-artifact@v3

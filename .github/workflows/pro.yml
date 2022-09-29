@@ -14,4 +14,9 @@ jobs:
     needs: [callVersion]
     uses: ./.github/workflows/reusable_build.yml
     with:
-      NUGETVERSIONV2: ${{ needs.callVersion.outputs.NUGETVERSIONV2 }}  
+      Configuration: Release
+      NUGETVERSIONV2: ${{ needs.callVersion.outputs.NUGETVERSIONV2 }} 
+      SlnPath: ./src/Svea.WebPay.SDK.sln
+      SdkCsprojPath: ./src/Svea.WebPay.SDK/Svea.WebPay.SDK.csproj
+      SampleSiteCsprojPath: ./src/Samples/Sample.AspNetCore/Sample.AspNetCore.csproj
+      SystemTestsCsprojPath: ./src/Samples/Sample.AspNetCore.SystemTests/Sample.AspNetCore.SystemTests.csproj

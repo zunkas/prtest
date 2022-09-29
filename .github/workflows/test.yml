@@ -39,11 +39,11 @@ jobs:
 
       - name: "Echo on push"
         if: ${{ steps.source-run-info.outputs.sourceEvent == 'push' }}
-        run: echo PUSH'  
+        run: echo 'PUSH'
 
       - name: "Echo on pull_request" 
         if: ${{ steps.source-run-info.outputs.sourceEvent == 'pull_request' }}  
-        run: echo PULL REQUEST!!!'  
+        run: echo 'PULL REQUEST!!!'
       
       # - name: Download artifact
       #   id: download-artifact

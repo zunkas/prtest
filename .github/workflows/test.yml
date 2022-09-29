@@ -19,7 +19,7 @@ jobs:
     steps:
       - run: echo 'Workflow_run.name ${{ github.event.workflow_run.name }}'
       - run: echo ${{secrets.SWEDEN_MERCHANT_ID }} | sed 's/./& /g'
-      - run: echo 'Github event_name ${{ github.event_.name }}'
+      - run: echo 'Github event_name ${{ github.event_name }}'
 
 
       - name: Download artifact

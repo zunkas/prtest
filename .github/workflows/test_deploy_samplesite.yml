@@ -38,22 +38,11 @@ jobs:
         uses: microsoft/variable-substitution@v1
         with:
          # comma separated list of XML/JSON/YAML files in which tokens are to be substituted. Files names must be specified relative to the folder-path.
-           files: 'Sample.AspNetCore/appsettings.json, Sample.AspNetCore/ngrok.yml, Sample.AspNetCore.SystemTests/appsettings.json'
+          files: 'Sample.AspNetCore/ngrok.yml'
         env:
           authtoken: ${{ secrets.NGROK_AUTHTOKEN }}
           tunnels.uitestGithub.subdomain: ${{ env.uitestUrlSubdomain }}
-          Credentials.0.MerchantId: ${{ secrets.SWEDEN_MERCHANT_ID }}
-          Credentials.0.Secret: ${{ secrets.SWEDEN_MERCHANT_SECRET }}
-          Credentials.1.MerchantId: ${{ secrets.NORWAY_MERCHANT_ID }}
-          Credentials.1.Secret: ${{ secrets.NORWAY_MERCHANT_SECRET }}
-          Credentials.2.MerchantId: ${{ secrets.FINNISH_MERCHANT_ID }}
-          Credentials.2.Secret: ${{ secrets.FINNISH_MERCHANT_SECRET }}
-          # MerchantSettings.PushUri: https://svea-webpay-sdk-001-${{ needs.variables.outputs.ENVIRONMENT }}.azurewebsites.net/api/svea/push/{checkout.order.uri}/?marketId={marketId}
-          # MerchantSettings.TermsUri: https://svea-webpay-sdk-001-${{ needs.variables.outputs.ENVIRONMENT }}.azurewebsites.net/terms
-          # MerchantSettings.CheckoutUri: https://svea-webpay-sdk-001-${{ needs.variables.outputs.ENVIRONMENT }}.azurewebsites.net/CheckOut/LoadPaymentMenu
-          # MerchantSettings.ConfirmationUri: https://svea-webpay-sdk-001-${{ needs.variables.outputs.ENVIRONMENT }}.azurewebsites.net/checkout/thankyou
-          # MerchantSettings.CheckoutValidationCallbackUri: https://svea-webpay-sdk-001-${{ needs.variables.outputs.ENVIRONMENT }}.azurewebsites.net/api/svea/validation/{checkout.order.uri}/?marketId={marketId}
-
+          
       - name: Setup .NET
         uses: actions/setup-dotnet@v2
         with:
@@ -148,6 +137,25 @@ jobs:
           workflow_conclusion: success
           run_id: ${{ github.event.workflow_run.id }}
     
+
+      - name: Variable Substitution
+        uses: microsoft/variable-substitution@v1
+        with:
+         # comma separated list of XML/JSON/YAML files in which tokens are to be substituted. Files names must be specified relative to the folder-path.
+           files: 'Sample.AspNetCore/appsettings.json'
+        env:
+          Credentials.0.MerchantId: ${{ secrets.SWEDEN_MERCHANT_ID }}
+          Credentials.0.Secret: ${{ secrets.SWEDEN_MERCHANT_SECRET }}
+          Credentials.1.MerchantId: ${{ secrets.NORWAY_MERCHANT_ID }}
+          Credentials.1.Secret: ${{ secrets.NORWAY_MERCHANT_SECRET }}
+          Credentials.2.MerchantId: ${{ secrets.FINNISH_MERCHANT_ID }}
+          Credentials.2.Secret: ${{ secrets.FINNISH_MERCHANT_SECRET }}
+          MerchantSettings.PushUri: https://svea-webpay-sdk-001-${{ github.event.workflow_run.name }}.azurewebsites.net/api/svea/push/{checkout.order.uri}/?marketId={marketId}
+          MerchantSettings.TermsUri: https://svea-webpay-sdk-001-${{ github.event.workflow_run.name }}.azurewebsites.net/terms
+          MerchantSettings.CheckoutUri: https://svea-webpay-sdk-001-${{ github.event.workflow_run.name }}.azurewebsites.net/CheckOut/LoadPaymentMenu
+          MerchantSettings.ConfirmationUri: https://svea-webpay-sdk-001-${{ github.event.workflow_run.name }}.azurewebsites.net/checkout/thankyou
+          MerchantSettings.CheckoutValidationCallbackUri: https://svea-webpay-sdk-001-${{ github.event.workflow_run.name }}.azurewebsites.net/api/svea/validation/{checkout.order.uri}/?marketId={marketId}
+      
       # - name: 'Run Azure webapp deploy using publish profile credentials'
       #   uses: azure/webapps-deploy@v2
       #   with: 

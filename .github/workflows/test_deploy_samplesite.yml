@@ -16,6 +16,8 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     environment: ${{ github.event.workflow_run.name }}
+    env:
+      uitestUrlSubdomain: uitest-${{ github.event.workflow_run.id }}-svea-webpay-sdk
 
     steps:
       - name: "Get information about the origin 'CI' run"
@@ -39,17 +41,18 @@ jobs:
            files: 'Sample.AspNetCore/appsettings.json, Sample.AspNetCore/ngrok.yml, Sample.AspNetCore.SystemTests/appsettings.json'
         env:
           authtoken: ${{ secrets.NGROK_AUTHTOKEN }}
+          tunnels.uitestGithub.subdomain: ${{ env.uitestUrlSubdomain }}
           Credentials.0.MerchantId: ${{ secrets.SWEDEN_MERCHANT_ID }}
           Credentials.0.Secret: ${{ secrets.SWEDEN_MERCHANT_SECRET }}
           Credentials.1.MerchantId: ${{ secrets.NORWAY_MERCHANT_ID }}
           Credentials.1.Secret: ${{ secrets.NORWAY_MERCHANT_SECRET }}
           Credentials.2.MerchantId: ${{ secrets.FINNISH_MERCHANT_ID }}
           Credentials.2.Secret: ${{ secrets.FINNISH_MERCHANT_SECRET }}
-          MerchantSettings.PushUri: https://svea-webpay-sdk-001-${{ needs.variables.outputs.ENVIRONMENT }}.azurewebsites.net/api/svea/push/{checkout.order.uri}/?marketId={marketId}
-          MerchantSettings.TermsUri: https://svea-webpay-sdk-001-${{ needs.variables.outputs.ENVIRONMENT }}.azurewebsites.net/terms
-          MerchantSettings.CheckoutUri: https://svea-webpay-sdk-001-${{ needs.variables.outputs.ENVIRONMENT }}.azurewebsites.net/CheckOut/LoadPaymentMenu
-          MerchantSettings.ConfirmationUri: https://svea-webpay-sdk-001-${{ needs.variables.outputs.ENVIRONMENT }}.azurewebsites.net/checkout/thankyou
-          MerchantSettings.CheckoutValidationCallbackUri: https://svea-webpay-sdk-001-${{ needs.variables.outputs.ENVIRONMENT }}.azurewebsites.net/api/svea/validation/{checkout.order.uri}/?marketId={marketId}
+          # MerchantSettings.PushUri: https://svea-webpay-sdk-001-${{ needs.variables.outputs.ENVIRONMENT }}.azurewebsites.net/api/svea/push/{checkout.order.uri}/?marketId={marketId}
+          # MerchantSettings.TermsUri: https://svea-webpay-sdk-001-${{ needs.variables.outputs.ENVIRONMENT }}.azurewebsites.net/terms
+          # MerchantSettings.CheckoutUri: https://svea-webpay-sdk-001-${{ needs.variables.outputs.ENVIRONMENT }}.azurewebsites.net/CheckOut/LoadPaymentMenu
+          # MerchantSettings.ConfirmationUri: https://svea-webpay-sdk-001-${{ needs.variables.outputs.ENVIRONMENT }}.azurewebsites.net/checkout/thankyou
+          # MerchantSettings.CheckoutValidationCallbackUri: https://svea-webpay-sdk-001-${{ needs.variables.outputs.ENVIRONMENT }}.azurewebsites.net/api/svea/validation/{checkout.order.uri}/?marketId={marketId}
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v2
@@ -73,7 +76,7 @@ jobs:
           chmod +x ngrok
           
       - name: Start ngrok
-        run: ./ngrok start -config Sample.AspNetCore/ngrok.yml uitest${{ github.event.workflow_run.name }} &
+        run: ./ngrok start -config Sample.AspNetCore/ngrok.yml uitestGithub &
                    
       - name: Start SDK Sample project
         working-directory: Sample.AspNetCore
@@ -86,11 +89,11 @@ jobs:
           Credentials:1:Secret: ${{ secrets.NORWAY_MERCHANT_SECRET }}
           Credentials:2:MerchantId: ${{ secrets.FINNISH_MERCHANT_ID }}
           Credentials:2:Secret: ${{ secrets.FINNISH_MERCHANT_SECRET }}
-          MerchantSettings:PushUri: https://uitest-${{ github.event.workflow_run.name }}-svea-webpay-sdk.eu.ngrok.io/api/svea/push/{checkout.order.uri}/?marketId={marketId}
-          MerchantSettings:TermsUri: https://uitest-${{ github.event.workflow_run.name }}-svea-webpay-sdk.eu.ngrok.io/terms
-          MerchantSettings:CheckoutUri: https://uitest-${{ github.event.workflow_run.name }}-svea-webpay-sdk.eu.ngrok.io/CheckOut/LoadPaymentMenu
-          MerchantSettings:ConfirmationUri: https://uitest-${{ github.event.workflow_run.name }}-svea-webpay-sdk.eu.ngrok.io/checkout/thankyou
-          MerchantSettings:CheckoutValidationCallbackUri: https://uitest-${{ github.event.workflow_run.name }}-svea-webpay-sdk.eu.ngrok.io/api/svea/validation/{checkout.order.uri}/?marketId={marketId}
+          MerchantSettings:PushUri: https://${{ env.uitestUrlSubdomain }}.eu.ngrok.io/api/svea/push/{checkout.order.uri}/?marketId={marketId}
+          MerchantSettings:TermsUri: https://${{ env.uitestUrlSubdomain }}.eu.ngrok.io/terms
+          MerchantSettings:CheckoutUri: https://${{ env.uitestUrlSubdomain }}.eu.ngrok.io/CheckOut/LoadPaymentMenu
+          MerchantSettings:ConfirmationUri: https://${{ env.uitestUrlSubdomain }}.eu.ngrok.io/checkout/thankyou
+          MerchantSettings:CheckoutValidationCallbackUri: https://${{ env.uitestUrlSubdomain }}.eu.ngrok.io/api/svea/validation/{checkout.order.uri}/?marketId={marketId}
       
       - name: Run SDK UI tests
         run: dotnet test Sample.AspNetCore.SystemTests/Sample.AspNetCore.SystemTests.dll

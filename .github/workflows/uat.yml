@@ -9,10 +9,12 @@ on:
 
 jobs:
   callVersion:
+    name: Create version number
     uses: ./.github/workflows/template_version.yml
   
   callBuild:
     needs: [callVersion]
+    name: Build and publish artifact
     uses: ./.github/workflows/template_build.yml
     secrets: inherit
     with:

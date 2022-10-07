@@ -18,6 +18,16 @@ jobs:
     environment: ${{ github.event.workflow_run.name }}
     env:
       uitestUrlSubdomain: uitest-${{ github.event.workflow_run.id }}-svea-webpay-sdk
+    outputs:
+      sourceHeadRepo: ${{ steps.source-run-info.outputs.sourceHeadRepo }}
+      sourceHeadBranch: ${{ steps.source-run-info.outputs.sourceHeadBranch }}
+      sourceHeadSha: ${{ steps.source-run-info.outputs.sourceHeadSha }}
+      mergeCommitSha: ${{ steps.source-run-info.outputs.mergeCommitSha }}
+      targetCommitSha: ${{ steps.source-run-info.outputs.targetCommitSha }}
+      pullRequestNumber: ${{ steps.source-run-info.outputs.pullRequestNumber }}
+      pullRequestLabels: ${{ steps.source-run-info.outputs.pullRequestLabels }}
+      targetBranch: ${{ steps.source-run-info.outputs.targetBranch }}
+      sourceEvent: ${{ steps.source-run-info.outputs.sourceEvent }}
 
     steps:
       - name: "Get information about the origin 'CI' run"
@@ -44,7 +54,7 @@ jobs:
           tunnels.uitestGithub.subdomain: ${{ env.uitestUrlSubdomain }}
           
       - name: Setup .NET
-        uses: actions/setup-dotnet@v2
+        uses: actions/setup-dotnet@v3
         with:
           dotnet-version: ${{ env.dotnetVersion }}       
 
@@ -97,7 +107,7 @@ jobs:
 
       - name: Commit Action Status
         if: ${{ always() }}
-        uses: LouisBrunner/checks-action@v1.1.1
+        uses: LouisBrunner/checks-action@v1.3.1
         with:
           sha: ${{ steps.source-run-info.outputs.sourceHeadSha }}
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -118,6 +128,8 @@ jobs:
         with:
           workflow_conclusion: success
           run_id: ${{ github.event.workflow_run.id }}
+          name: packages
+          path: packages
     
       # - name: Publish test package to GitHub Package Registry
       #   run: dotnet nuget push "packages/*.nupkg" --api-key ${{secrets.GITHUB_TOKEN}} --source  https://nuget.pkg.github.com/sveawebpay/index.json --skip-duplicate

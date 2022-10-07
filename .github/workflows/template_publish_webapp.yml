@@ -23,7 +23,8 @@ jobs:
         with:
           workflow_conclusion: success
           run_id: ${{ inputs.WorkflowRunId }}
-    
+          name: Sample.AspNetCore
+          path: Sample.AspNetCore
 
       - name: Variable Substitution
         uses: microsoft/variable-substitution@v1
